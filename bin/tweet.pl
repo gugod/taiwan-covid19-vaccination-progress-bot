@@ -36,7 +36,7 @@ exit(main(@ARGV));
 sub build_message {
     my $p = people_vaccinated();
     my ($bar, $percentage) = build_progress_bar($p, POPULATION_OF_TAIWAN);
-    $percentage = int(10 * $percentage) / 10;
+    $percentage = int(1000 * $percentage) / 1000;
     return $bar . " " . $percentage . '%';
 }
 
