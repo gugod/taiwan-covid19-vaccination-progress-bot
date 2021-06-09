@@ -34,10 +34,15 @@ sub main {
 exit(main(@ARGV));
 
 sub build_message {
-    my $p = people_vaccinated();
+    my $progress = latest_progress();
+    my $p = $progress->{"total_vaccinations"};
+    my $date = $progress->{"date"};
+    $date =~ s{/}{-}g;
+
     my ($bar, $percentage) = build_progress_bar($p, POPULATION_OF_TAIWAN);
     $percentage = int(1000 * $percentage) / 1000;
-    return $bar . " " . $percentage . '%';
+
+    return "$bar $percentage\%\n\n至 $date 累計接種 $p 人次\n#CovidVaccine #COVID19 #COVID19Taiwan";
 }
 
 sub build_progress_bar($n, $base) {
@@ -49,13 +54,21 @@ sub build_progress_bar($n, $base) {
     return ($bar, $percentage)
 }
 
-sub people_vaccinated {
+sub latest_progress {
     my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
     my $res = Mojo::UserAgent->new->get($url)->result;
     $res->is_success or die "Failed to fetch: $url";
     my @lines = split /\n/, $res->body;
     my @columns = split /,/, $lines[-1]; # yes, it works correctly for this particular csv.
-    return $columns[4];
+    return +{
+        "location" => $columns[0],
+        "date" => $columns[1],
+        "vaccine" => $columns[2],
+        "source_url" => $columns[3],
+        "total_vaccinations" => $columns[4],
+        "people_vaccinated" => $columns[5],
+        "people_fully_vaccinated" => $columns[6],
+    }
 }
 
 sub maybe_tweet_update ($opts, $msg) {
