@@ -4,6 +4,7 @@ use utf8;
 use feature 'signatures';
 
 use Twitter::API;
+use Text::CSV qw(csv);
 use YAML ();
 use Encode ('encode_utf8');
 use Getopt::Long ('GetOptionsFromArray');
@@ -58,17 +59,10 @@ sub latest_progress {
     my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
     my $res = Mojo::UserAgent->new->get($url)->result;
     $res->is_success or die "Failed to fetch: $url";
-    my @lines = split /\n/, $res->body;
-    my @columns = split /,/, $lines[-1]; # yes, it works correctly for this particular csv.
-    return +{
-        "location" => $columns[0],
-        "date" => $columns[1],
-        "vaccine" => $columns[2],
-        "source_url" => $columns[3],
-        "total_vaccinations" => $columns[4],
-        "people_vaccinated" => $columns[5],
-        "people_fully_vaccinated" => $columns[6],
-    }
+
+    my $body = $res->body;
+    my $rows = csv( "in" => \$body, "headers" => "auto");
+    return $rows->[-1];
 }
 
 sub maybe_tweet_update ($opts, $msg) {
