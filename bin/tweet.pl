@@ -38,6 +38,9 @@ sub build_message {
     my $progress = latest_progress();
     my $p = $progress->{"total_vaccinations"};
     my $date = $progress->{"date"};
+
+    die "Looks weird: vaccinations = [$p] date = [$date]" unless $p > 0 && $date =~ /\A202[1-9]-[0-9]{2}-[0-9]{2}\z/;
+
     $date =~ s{/}{-}g;
 
     my ($bar, $percentage) = build_progress_bar($p, POPULATION_OF_TAIWAN);
