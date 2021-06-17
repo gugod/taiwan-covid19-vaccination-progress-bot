@@ -36,26 +36,17 @@ exit(main(@ARGV));
 
 sub build_message {
     my $progress = latest_progress();
+    my $p = $progress->{"total_vaccinations"};
     my $date = $progress->{"date"};
-    my $total_vaccinations = $progress->{"total_vaccinations"};
-    my $dose1_cumulative_sum = $progress->{"people_vaccinated"};
-    my $dose2_cumulative_sum = $progress->{"people_fully_vaccinated"};
 
-    die "Looks weird: date: [$date]" unless $date =~ /\A202[1-9]-[0-9]{2}-[0-9]{2}\z/;
-    die "Looks weird: total_vaccinations: [$total_vaccinations]" unless $total_vaccinations > 0;
-    die "Looks weird: dose1: [$dose1_cumulative_sum]" unless $dose1_cumulative_sum > 0;
-    die "Looks weird: dose2: [$dose2_cumulative_sum]" unless $dose2_cumulative_sum > 0;
+    die "Looks weird: vaccinations = [$p] date = [$date]" unless $p > 0 && $date =~ /\A202[1-9]-[0-9]{2}-[0-9]{2}\z/;
 
     $date =~ s{/}{-}g;
 
-    my @o = map { build_progress_bar($_, POPULATION_OF_TAIWAN) } ( $dose1_cumulative_sum, $dose2_cumulative_sum );
+    my ($bar, $percentage) = build_progress_bar($p, POPULATION_OF_TAIWAN);
+    $percentage = int(1000 * $percentage) / 1000;
 
-    return "第一劑 $dose1_cumulative_sum 人\n" .
-        $o[0]{"bar"} . " " . $o[0]{"percentage"} . "\%\n\n" .
-        "第二劑 $dose2_cumulative_sum 人\n" .
-        $o[1]{"bar"} . " " . $o[1]{"percentage"} . "\%\n\n" .
-        "累計至 $date，全民接種了 $total_vaccinations 劑\n" .
-        "#CovidVaccine #COVID19 #COVID19Taiwan";
+    return "$bar $percentage\%\n\n至 $date 累計接種 $p 人次\n#CovidVaccine #COVID19 #COVID19Taiwan";
 }
 
 sub build_progress_bar($n, $base) {
@@ -64,8 +55,7 @@ sub build_progress_bar($n, $base) {
     my $p = int $width * $percentage / 100;
     my $q = $width - $p;
     my $bar = "[" . ("#" x $p) . ("_" x $q) . "]";
-    $percentage = int(1000 * $percentage) / 1000;
-    return { "bar" => $bar, "percentage" => $percentage };
+    return ($bar, $percentage)
 }
 
 sub latest_progress {
