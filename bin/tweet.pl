@@ -54,7 +54,7 @@ sub build_message {
         my $o = build_progress_bar($total_vaccinations, POPULATION_OF_TAIWAN);
         $msg .= "第一劑 + 第二劑\n" .
             $o->{"bar"} . " " . $o->{"percentage"} . "\%\n\n";
-    }{}
+    }
 
     $msg .= "累計至 $date，全民共接種了 $total_vaccinations 劑\n" .
         "#CovidVaccine #COVID19 #COVID19Taiwan";
