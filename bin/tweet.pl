@@ -46,13 +46,13 @@ sub build_message {
     my $msg = "";
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
         my @o = map { build_progress_bar($_, POPULATION_OF_TAIWAN) } ( $dose1_cumulative_sum, $dose2_cumulative_sum );
-        $msg .= "第一劑 $dose1_cumulative_sum 人\n" .
+        $msg .= "💉第一劑 $dose1_cumulative_sum 人\n" .
             $o[0]{"bar"} . " " . $o[0]{"percentage"} . "\%\n\n" .
-            "第二劑 $dose2_cumulative_sum 人\n" .
+            "💉第二劑 $dose2_cumulative_sum 人\n" .
             $o[1]{"bar"} . " " . $o[1]{"percentage"} . "\%\n\n";
     } else {
         my $o = build_progress_bar($total_vaccinations, POPULATION_OF_TAIWAN);
-        $msg .= "第一劑 + 第二劑\n" .
+        $msg .= "💉第一劑 + 第二劑\n" .
             $o->{"bar"} . " " . $o->{"percentage"} . "\%\n\n";
     }
 
