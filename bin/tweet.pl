@@ -36,17 +36,29 @@ exit(main(@ARGV));
 
 sub build_message {
     my $progress = latest_progress();
-    my $p = $progress->{"total_vaccinations"};
     my $date = $progress->{"date"};
-
-    die "Looks weird: vaccinations = [$p] date = [$date]" unless $p > 0 && $date =~ /\A202[1-9]-[0-9]{2}-[0-9]{2}\z/;
+    my $total_vaccinations = $progress->{"total_vaccinations"};
+    my $dose1_cumulative_sum = $progress->{"people_vaccinated"};
+    my $dose2_cumulative_sum = $progress->{"people_fully_vaccinated"};
 
     $date =~ s{/}{-}g;
 
-    my ($bar, $percentage) = build_progress_bar($p, POPULATION_OF_TAIWAN);
-    $percentage = int(1000 * $percentage) / 1000;
+    my $msg = "";
+    if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
+        my @o = map { build_progress_bar($_, POPULATION_OF_TAIWAN) } ( $dose1_cumulative_sum, $dose2_cumulative_sum );
+        $msg .= "第一劑 $dose1_cumulative_sum 人\n" .
+            $o[0]{"bar"} . " " . $o[0]{"percentage"} . "\%\n\n" .
+            "第二劑 $dose2_cumulative_sum 人\n" .
+            $o[1]{"bar"} . " " . $o[1]{"percentage"} . "\%\n\n";
+    } else {
+        my $o = build_progress_bar($total_vaccinations, POPULATION_OF_TAIWAN);
+        $msg .= "第一劑 + 第二劑\n" .
+            $o->{"bar"} . " " . $o->{"percentage"} . "\%\n\n";
+    }{}
 
-    return "$bar $percentage\%\n\n至 $date 累計接種 $p 人次 (第一劑 + 第二劑)\n#CovidVaccine #COVID19 #COVID19Taiwan";
+    $msg .= "累計至 $date，全民共接種了 $total_vaccinations 劑\n" .
+        "#CovidVaccine #COVID19 #COVID19Taiwan";
+    return $msg;
 }
 
 sub build_progress_bar($n, $base) {
@@ -55,11 +67,13 @@ sub build_progress_bar($n, $base) {
     my $p = int $width * $percentage / 100;
     my $q = $width - $p;
     my $bar = "[" . ("#" x $p) . ("_" x $q) . "]";
-    return ($bar, $percentage)
+    $percentage = int(1000 * $percentage) / 1000;
+    return { "bar" => $bar, "percentage" => $percentage };
 }
 
 sub latest_progress {
-    my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
+    # my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
+    my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/scripts/scripts/vaccinations/output/Taiwan.csv";
     my $res = Mojo::UserAgent->new->get($url)->result;
     $res->is_success or die "Failed to fetch: $url";
 
