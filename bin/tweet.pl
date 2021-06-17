@@ -46,7 +46,7 @@ sub build_message {
     my ($bar, $percentage) = build_progress_bar($p, POPULATION_OF_TAIWAN);
     $percentage = int(1000 * $percentage) / 1000;
 
-    return "$bar $percentage\%\n\n至 $date 累計接種 $p 人次\n#CovidVaccine #COVID19 #COVID19Taiwan";
+    return "$bar $percentage\%\n\n至 $date 累計接種 $p 人次 (第一劑 + 第二劑)\n#CovidVaccine #COVID19 #COVID19Taiwan";
 }
 
 sub build_progress_bar($n, $base) {
