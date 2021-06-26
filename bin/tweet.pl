@@ -15,6 +15,17 @@ use constant {
     POPULATION_OF_TAIWAN => 23514196,
 };
 
+sub commify($num) {
+    my $i = length($num) % 3;
+    $i = 3 if $i == 0;
+    my $num_commified = substr($num, 0, $i);
+    while ($i < length($num)) {
+        $num_commified .= "," . substr($num, $i, 3);
+        $i += 3;
+    }
+    return $num_commified;
+}
+
 sub main {
     my @args = @_;
 
@@ -46,9 +57,9 @@ sub build_message {
     my $msg = "";
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
         my @o = map { build_progress_bar($_, POPULATION_OF_TAIWAN) } ( $dose1_cumulative_sum, $dose2_cumulative_sum );
-        $msg .= "💉第一劑 $dose1_cumulative_sum 人\n" .
+        $msg .= "💉第一劑 " . commify($dose1_cumulative_sum) . " 人\n" .
             $o[0]{"bar"} . " " . $o[0]{"percentage"} . "\%\n\n" .
-            "💉第二劑 $dose2_cumulative_sum 人\n" .
+            "💉第二劑 " . commify($dose2_cumulative_sum) . " 人\n" .
             $o[1]{"bar"} . " " . $o[1]{"percentage"} . "\%\n\n";
     } else {
         my $o = build_progress_bar($total_vaccinations, POPULATION_OF_TAIWAN);
@@ -56,7 +67,7 @@ sub build_message {
             $o->{"bar"} . " " . $o->{"percentage"} . "\%\n\n";
     }
 
-    $msg .= "累計至 $date，全民共接種了 $total_vaccinations 劑\n" .
+    $msg .= "累計至 $date，全民共接種了 " . commify($total_vaccinations) . " 劑\n" .
         "#CovidVaccine #COVID19 #COVID19Taiwan";
     return $msg;
 }
