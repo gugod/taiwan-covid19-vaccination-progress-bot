@@ -16,8 +16,7 @@ use constant {
 };
 
 sub commify($num) {
-    my $i = length($num) % 3;
-    $i = 3 if $i == 0;
+    my $i = (length($num) % 3) || 3;
     my $num_commified = substr($num, 0, $i);
     while ($i < length($num)) {
         $num_commified .= "," . substr($num, $i, 3);
