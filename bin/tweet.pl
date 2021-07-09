@@ -45,20 +45,26 @@ sub main {
 exit(main(@ARGV));
 
 sub build_message {
-    my $progress = latest_progress();
-    my $date = $progress->{"date"};
-    my $total_vaccinations = $progress->{"total_vaccinations"};
-    my $dose1_cumulative_sum = $progress->{"people_vaccinated"};
-    my $dose2_cumulative_sum = $progress->{"people_fully_vaccinated"};
+    my $full_progress = full_progress();
+
+    my $latest = $full_progress->[-1];
+    my $date = $latest->{"date"};
+    my $total_vaccinations = $latest->{"total_vaccinations"};
+    my $dose1_cumulative_sum = $latest->{"people_vaccinated"};
+    my $dose2_cumulative_sum = $latest->{"people_fully_vaccinated"};
+
+    my $previous = $full_progress->[-2];
+    my $dose1_increase = $dose1_cumulative_sum - $previous->{"people_vaccinated"};
+    my $dose2_increase = $dose2_cumulative_sum - $previous->{"people_fully_vaccinated"};
 
     $date =~ s{/}{-}g;
 
     my $msg = "";
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
         my @o = map { build_progress_bar($_, POPULATION_OF_TAIWAN) } ( $dose1_cumulative_sum, $dose2_cumulative_sum );
-        $msg .= "💉第一劑 " . commify($dose1_cumulative_sum) . " 人\n" .
+        $msg .= "💉第一劑 " . commify($dose1_cumulative_sum) . " 人 (+" . commify($dose1_increase) . ")\n" .
             $o[0]{"bar"} . " " . $o[0]{"percentage"} . "\%\n\n" .
-            "💉第二劑 " . commify($dose2_cumulative_sum) . " 人\n" .
+            "💉第二劑 " . commify($dose2_cumulative_sum) . " 人 (+". commify($dose2_increase) .")\n" .
             $o[1]{"bar"} . " " . $o[1]{"percentage"} . "\%\n\n";
     } else {
         my $o = build_progress_bar($total_vaccinations, POPULATION_OF_TAIWAN);
@@ -81,15 +87,14 @@ sub build_progress_bar($n, $base) {
     return { "bar" => $bar, "percentage" => $percentage };
 }
 
-sub latest_progress {
+sub full_progress {
     # my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
     my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/scripts/scripts/vaccinations/output/Taiwan.csv";
     my $res = Mojo::UserAgent->new->get($url)->result;
     $res->is_success or die "Failed to fetch: $url";
 
     my $body = $res->body;
-    my $rows = csv( "in" => \$body, "headers" => "auto");
-    return $rows->[-1];
+    return csv( "in" => \$body, "headers" => "auto");
 }
 
 sub maybe_tweet_update ($opts, $msg) {
@@ -110,7 +115,7 @@ sub maybe_tweet_update ($opts, $msg) {
         say "[INFO] No config.";
     }
 
-    say "# Message";
+    say "# Message (length=" . length($msg) . ")";
     say "-------8<---------";
     say encode_utf8($msg);
     say "------->8---------";
