@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tweet-taiwan-covid19-vaccination-progress
+spec:
+  schedule: "0 20 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+            - name: twitter-token
+              secret:
+                secretName: taiwan-covid19-vaccination-progress-bot-twitter-token
+          containers:
+            - image: gugod/taiwan-covid19-vaccination-progress-bot:latest
+              command:
+                - perl
+                - /app/bin/tweet.pl
+                - '-c'
+                - /app/secrets/twitter-token.yml
+                - '--yes'
+              volumeMounts:
+                - name: twitter-token
+                  mountPath: /app/secrets
+                  readOnly: true
+          restartPolicy: Never
