@@ -62,34 +62,32 @@ sub build_message {
     my $dose1_cumulative_sum = $latest->{"people_vaccinated"};
     my $dose2_cumulative_sum = $latest->{"people_fully_vaccinated"};
 
-    my ($dose1_increase, $dose2_increase);
-    if (date_diff($date, $previous->{"date"}) == 1) {
-        $dose1_increase = $dose1_cumulative_sum - $previous->{"people_vaccinated"};
-        $dose2_increase = $dose2_cumulative_sum - $previous->{"people_fully_vaccinated"};
-    }
-
     my $msg = "";
+
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
-        my $with_dose1_increase = "";
-        my $with_dose2_increase = "";
-
-        $with_dose1_increase = " (+" . commify($dose1_increase) . ")" if $dose1_increase;
-        $with_dose2_increase = " (+" . commify($dose2_increase) . ")" if $dose2_increase;
-
-        my @o = map { build_progress_bar($_, POPULATION_OF_TAIWAN) } ( $dose1_cumulative_sum, $dose2_cumulative_sum );
-        $msg .= "💉第一劑 " . commify($dose1_cumulative_sum) . " 人" . $with_dose1_increase. "\n" .
-            $o[0]{"bar"} . " " . $o[0]{"percentage"} . "\%\n\n" .
-            "💉第二劑 " . commify($dose2_cumulative_sum) . " 人" . $with_dose2_increase ."\n" .
-            $o[1]{"bar"} . " " . $o[1]{"percentage"} . "\%\n\n";
+        my ($dose1_increase, $dose2_increase);
+        if (date_diff($date, $previous->{"date"}) == 1) {
+            $dose1_increase = $dose1_cumulative_sum - $previous->{"people_vaccinated"};
+            $dose2_increase = $dose2_cumulative_sum - $previous->{"people_fully_vaccinated"};
+        }
+        $msg .= dose_bar("💉第一劑", $dose1_cumulative_sum, $dose1_increase);
+        $msg .= dose_bar("💉第二劑", $dose2_cumulative_sum, $dose2_increase);
     } else {
-        my $o = build_progress_bar($total_vaccinations, POPULATION_OF_TAIWAN);
-        $msg .= "💉第一劑 + 第二劑\n" .
-            $o->{"bar"} . " " . $o->{"percentage"} . "\%\n\n";
+        $msg .= dose_bar("💉第一劑 + 第二劑", $total_vaccinations, undef);
     }
 
     $msg .= "累計至 $date，全民共接種了 " . commify($total_vaccinations) . " 劑\n" .
         "#CovidVaccine #COVID19 #COVID19Taiwan";
     return $msg;
+}
+
+sub dose_bar($label, $cumulative_sum, $increase) {
+    my $o = build_progress_bar($cumulative_sum, POPULATION_OF_TAIWAN);
+    my $with_increase = " (+" . commify($increase) . ")" if $increase;
+    return (
+        $label . " ". commify($cumulative_sum) . $with_increase . "\n" .
+        $o->{"bar"} . " " . $o->{"percentage"} . "\%\n\n"
+    );
 }
 
 sub build_progress_bar($n, $base) {
