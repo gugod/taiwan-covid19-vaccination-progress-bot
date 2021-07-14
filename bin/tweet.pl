@@ -88,7 +88,6 @@ sub build_progress_bar($n, $base) {
 }
 
 sub full_progress {
-    # my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
     my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/scripts/scripts/vaccinations/output/Taiwan.csv";
     my $res = Mojo::UserAgent->new->get($url)->result;
     $res->is_success or die "Failed to fetch: $url";
