@@ -9,6 +9,7 @@ use YAML ();
 use Encode ('encode_utf8');
 use Getopt::Long ('GetOptionsFromArray');
 use Mojo::UserAgent;
+use Mojo::Date;
 
 use constant {
     # Number https://zh.wikipedia.org/wiki/%E8%87%BA%E7%81%A3%E4%BA%BA%E5%8F%A3
@@ -44,27 +45,41 @@ sub main {
 
 exit(main(@ARGV));
 
+sub date_diff ($date1, $date2) {
+    my $d1 = Mojo::Date->new($date1 . "T00:00:00Z");
+    my $d2 = Mojo::Date->new($date2 . "T00:00:00Z");
+    return int ($d1->epoch - $d2->epoch) / 86400;
+}
+
 sub build_message {
     my $full_progress = full_progress();
 
     my $latest = $full_progress->[-1];
+    my $previous = $full_progress->[-2];
+
     my $date = $latest->{"date"};
     my $total_vaccinations = $latest->{"total_vaccinations"};
     my $dose1_cumulative_sum = $latest->{"people_vaccinated"};
     my $dose2_cumulative_sum = $latest->{"people_fully_vaccinated"};
 
-    my $previous = $full_progress->[-2];
-    my $dose1_increase = $dose1_cumulative_sum - $previous->{"people_vaccinated"};
-    my $dose2_increase = $dose2_cumulative_sum - $previous->{"people_fully_vaccinated"};
-
-    $date =~ s{/}{-}g;
+    my ($dose1_increase, $dose2_increase);
+    if (date_diff($date, $previous->{"date"}) == 1) {
+        $dose1_increase = $dose1_cumulative_sum - $previous->{"people_vaccinated"};
+        $dose2_increase = $dose2_cumulative_sum - $previous->{"people_fully_vaccinated"};
+    }
 
     my $msg = "";
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
+        my $with_dose1_increase = "";
+        my $with_dose2_increase = "";
+
+        $with_dose1_increase = " (+" . commify($dose1_increase) . ")" if $dose1_increase;
+        $with_dose2_increase = " (+" . commify($dose2_increase) . ")" if $dose2_increase;
+
         my @o = map { build_progress_bar($_, POPULATION_OF_TAIWAN) } ( $dose1_cumulative_sum, $dose2_cumulative_sum );
-        $msg .= "💉第一劑 " . commify($dose1_cumulative_sum) . " 人 (+" . commify($dose1_increase) . ")\n" .
+        $msg .= "💉第一劑 " . commify($dose1_cumulative_sum) . " 人" . $with_dose1_increase. "\n" .
             $o[0]{"bar"} . " " . $o[0]{"percentage"} . "\%\n\n" .
-            "💉第二劑 " . commify($dose2_cumulative_sum) . " 人 (+". commify($dose2_increase) .")\n" .
+            "💉第二劑 " . commify($dose2_cumulative_sum) . " 人" . $with_dose2_increase ."\n" .
             $o[1]{"bar"} . " " . $o[1]{"percentage"} . "\%\n\n";
     } else {
         my $o = build_progress_bar($total_vaccinations, POPULATION_OF_TAIWAN);
@@ -91,7 +106,6 @@ sub full_progress {
     my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/scripts/scripts/vaccinations/output/Taiwan.csv";
     my $res = Mojo::UserAgent->new->get($url)->result;
     $res->is_success or die "Failed to fetch: $url";
-
     my $body = $res->body;
     return csv( "in" => \$body, "headers" => "auto");
 }
