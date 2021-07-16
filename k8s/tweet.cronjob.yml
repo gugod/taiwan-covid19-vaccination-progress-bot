@@ -16,7 +16,8 @@ spec:
               secret:
                 secretName: taiwan-covid19-vaccination-progress-bot-twitter-token
           containers:
-            - image: gugod/taiwan-covid19-vaccination-progress-bot:latest
+            - name: taiwan-covid19-vaccination-progress-bot
+              image: gugod/taiwan-covid19-vaccination-progress-bot:latest
               command:
                 - perl
                 - /app/bin/tweet.pl
