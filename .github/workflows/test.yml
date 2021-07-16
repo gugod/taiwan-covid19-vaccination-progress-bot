@@ -1,0 +1,15 @@
+name: Test
+
+on:
+  push:
+
+jobs:
+  tweet:
+    container:
+      image: perl:5.32
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cpanm -q --notest --no-man-pages --installdeps .
+      - name: local post
+        run: perl bin/tweet.pl
