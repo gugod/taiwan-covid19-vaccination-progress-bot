@@ -64,7 +64,7 @@ sub build_message {
     my $dose1_cumulative_sum = $latest->{"people_vaccinated"};
     my $dose2_cumulative_sum = $latest->{"people_fully_vaccinated"};
 
-    my $msg = "";
+    my $msg = "累計至 $date，全民共接種了 " . commify($total_vaccinations) . " 劑\n\n";
 
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
         my ($dose1_increase, $dose2_increase);
@@ -78,8 +78,7 @@ sub build_message {
         $msg .= dose_bar("💉第一劑 + 第二劑", $total_vaccinations, undef);
     }
 
-    $msg .= "累計至 $date，全民共接種了 " . commify($total_vaccinations) . " 劑\n" .
-        "#CovidVaccine #COVID19 #COVID19Taiwan";
+    $msg .= "#CovidVaccine #COVID19 #COVID19Taiwan";
     return $msg;
 }
 
