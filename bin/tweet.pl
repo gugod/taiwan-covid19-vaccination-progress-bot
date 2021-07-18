@@ -36,10 +36,12 @@ sub main {
         \%opts,
         'c=s',
         'mastodon-config=s',
-        'y|yes'
+        'y|yes',
+        'fake-today=s',
     ) or die("Error in arguments, but I'm not telling you what it is.");
 
-    my $msg = build_message();
+    my $today = $opts{"fake-today"} || today();
+    my $msg = build_message($today);
     maybe_post_update(\%opts, $msg);
 
     return 0;
@@ -47,13 +49,18 @@ sub main {
 
 exit(main(@ARGV));
 
+sub today {
+    my ($year, $mon, $day) = (localtime())[5,4,3];
+    return sprintf('%04d-%02d-%02d', ($year + 1900), ($mon + 1), $day);
+}
+
 sub date_diff ($date1, $date2) {
     my $d1 = Mojo::Date->new($date1 . "T00:00:00Z");
     my $d2 = Mojo::Date->new($date2 . "T00:00:00Z");
     return int ($d1->epoch - $d2->epoch) / 86400;
 }
 
-sub build_message {
+sub build_message ($today) {
     my $full_progress = full_progress();
 
     my $latest = $full_progress->[-1];
@@ -63,6 +70,10 @@ sub build_message {
     my $total_vaccinations = $latest->{"total_vaccinations"};
     my $dose1_cumulative_sum = $latest->{"people_vaccinated"};
     my $dose2_cumulative_sum = $latest->{"people_fully_vaccinated"};
+
+    if (date_diff($today, $date) != 1) {
+        return "";
+    }
 
     my $msg = "累計至 $date，全民共接種了 " . commify($total_vaccinations) . " 劑\n\n";
 
