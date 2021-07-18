@@ -4,6 +4,7 @@ use utf8;
 use feature 'signatures';
 
 use Twitter::API;
+use Mastodon::Client;
 use Text::CSV qw(csv);
 use YAML ();
 use Encode ('encode_utf8');
@@ -34,11 +35,12 @@ sub main {
         \@args,
         \%opts,
         'c=s',
+        'mastodon-config=s',
         'y|yes'
     ) or die("Error in arguments, but I'm not telling you what it is.");
 
     my $msg = build_message();
-    maybe_tweet_update(\%opts, $msg);
+    maybe_post_update(\%opts, $msg);
 
     return 0;
 }
@@ -108,25 +110,30 @@ sub full_progress {
     return csv( "in" => \$body, "headers" => "auto");
 }
 
-sub maybe_tweet_update ($opts, $msg) {
+sub maybe_post_update ($opts, $msg) {
     unless ($msg) {
         say "# Message is empty.";
         return;
-    }
-
-    my $config;
-
-    if ($opts->{c} && -f $opts->{c}) {
-        say "[INFO] Loading config from $opts->{c}";
-        $config = YAML::LoadFile( $opts->{c} );
-    } else {
-        say "[INFO] No config.";
     }
 
     say "# Message (length=" . length($msg) . ")";
     say "-------8<---------";
     say encode_utf8($msg);
     say "------->8---------";
+
+    maybe_tweet_update($opts, $msg);
+    maybe_toot_update($opts, $msg);
+}
+
+sub maybe_tweet_update ($opts, $msg) {
+    my $config;
+
+    if ($opts->{c} && -f $opts->{c}) {
+        say "[INFO] Loading config from $opts->{c}";
+        $config = YAML::LoadFile( $opts->{c} );
+    } else {
+        say "[INFO] No Twitter config.";
+    }
 
     if ($opts->{y} && $config) {
         say "#=> Tweet for real";
@@ -142,5 +149,33 @@ sub maybe_tweet_update ($opts, $msg) {
         say "https://twitter.com/" . $r->{"user"}{"screen_name"} . "/status/" . $r->{id_str};
     } else {
         say "#=> Not tweeting";
+    }
+}
+
+sub maybe_toot_update ($opts, $msg) {
+    my $config;
+
+    if ($opts->{'mastodon-config'} && -f $opts->{'mastodon-config'}) {
+        say "[INFO] Loading config from " . $opts->{'mastodon-config'};
+        $config = YAML::LoadFile( $opts->{'mastodon-config'} );
+    } else {
+        say "[INFO] No Mastodon config.";
+    }
+
+    if ($opts->{y} && $config) {
+        say "#=> Toot for real";
+        my $mastodon = Mastodon::Client->new(
+            "instance"        => $config->{"instance"},
+            "name"            => $config->{"name"},
+            "client_id"       => $config->{"client_id"},
+            "client_secret"   => $config->{"client_secret"},
+            "access_token"    => $config->{"access_token"},
+            "coerce_entities" => 1,
+        );
+
+        my $r = $mastodon->post_status($msg);
+        say $r->url;
+    } else {
+        say "#=> Not tooting";
     }
 }
