@@ -12,9 +12,9 @@ spec:
       template:
         spec:
           volumes:
-            - name: twitter-token
+            - name: sns-tokens
               secret:
-                secretName: taiwan-covid19-vaccination-progress-bot-twitter-token
+                secretName: taiwan-covid19-vaccination-progress-bot-sns-tokens
           containers:
             - name: taiwan-covid19-vaccination-progress-bot
               image: gugod/taiwan-covid19-vaccination-progress-bot:latest
@@ -23,9 +23,11 @@ spec:
                 - /app/bin/tweet.pl
                 - '-c'
                 - /app/secrets/twitter-token.yml
+                - '--mastodon-config'
+                - /app/secrets/mastodon-token.yml
                 - '--yes'
               volumeMounts:
-                - name: twitter-token
+                - name: sns-tokens
                   mountPath: /app/secrets
                   readOnly: true
           restartPolicy: Never
