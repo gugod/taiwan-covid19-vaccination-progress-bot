@@ -119,9 +119,6 @@ sub maybe_tweet_update ($opts, $msg) {
     if ($opts->{c} && -f $opts->{c}) {
         say "[INFO] Loading config from $opts->{c}";
         $config = YAML::LoadFile( $opts->{c} );
-    } elsif ($opts->{'github-secret'} && $ENV{'TWITTER_TOKENS'}) {
-        say "[INFO] Loading config from env";
-        $config = YAML::Load($ENV{'TWITTER_TOKENS'});
     } else {
         say "[INFO] No config.";
     }
