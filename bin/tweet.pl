@@ -11,6 +11,7 @@ use Encode ('encode_utf8');
 use Getopt::Long ('GetOptionsFromArray');
 use Mojo::UserAgent;
 use Mojo::Date;
+use Mojo::File;
 
 use constant {
     # Number https://zh.wikipedia.org/wiki/%E8%87%BA%E7%81%A3%E4%BA%BA%E5%8F%A3
@@ -38,10 +39,11 @@ sub main {
         'mastodon-config=s',
         'y|yes',
         'fake-today=s',
+        'csv-file=s',
+        'csv-url=s',
     ) or die("Error in arguments, but I'm not telling you what it is.");
 
-    my $today = $opts{"fake-today"} || today();
-    my $msg = build_message($today);
+    my $msg = build_message(\%opts);
     maybe_post_update(\%opts, $msg);
 
     return 0;
@@ -60,8 +62,8 @@ sub date_diff ($date1, $date2) {
     return int ($d1->epoch - $d2->epoch) / 86400;
 }
 
-sub build_message ($today) {
-    my $full_progress = full_progress();
+sub build_message ($opts) {
+    my $full_progress = full_progress($opts);
 
     my $latest = $full_progress->[-1];
     my $previous = $full_progress->[-2];
@@ -71,6 +73,7 @@ sub build_message ($today) {
     my $dose1_cumulative_sum = $latest->{"people_vaccinated"};
     my $dose2_cumulative_sum = $latest->{"people_fully_vaccinated"};
 
+    my $today = $opts->{"fake-today"} || today();
     if (date_diff($today, $date) != 1) {
         return "";
     }
@@ -112,11 +115,18 @@ sub build_progress_bar($n, $base) {
     return { "bar" => $bar, "percentage" => $percentage };
 }
 
-sub full_progress {
-    my $url = "https://raw.githubusercontent.com/owid/covid-19-data/master/scripts/scripts/vaccinations/output/Taiwan.csv";
-    my $res = Mojo::UserAgent->new->get($url)->result;
-    $res->is_success or die "Failed to fetch: $url";
-    my $body = $res->body;
+sub full_progress ($opts) {
+    my $body;
+    if ($opts->{"csv-file"}) {
+        $body = Mojo::File->new($opts->{"csv-file"})->slurp;
+    } else {
+        my $url = $opts->{"csv-url"} // "https://raw.githubusercontent.com/owid/covid-19-data/master/scripts/scripts/vaccinations/output/Taiwan.csv";
+        my $res = Mojo::UserAgent->new->get($url)->result;
+        $res->is_success or die "Failed to fetch: $url";
+        $body = $res->body;
+    }
+
+    die "No CSV" unless $body;
     return csv( "in" => \$body, "headers" => "auto");
 }
 
