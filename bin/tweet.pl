@@ -15,7 +15,7 @@ use Mojo::File;
 
 use constant {
     # Number https://zh.wikipedia.org/wiki/%E8%87%BA%E7%81%A3%E4%BA%BA%E5%8F%A3
-    POPULATION_OF_TAIWAN => 23514196,
+    POPULATION_OF_TAIWAN => 23487509,
 };
 
 sub commify($num) {
