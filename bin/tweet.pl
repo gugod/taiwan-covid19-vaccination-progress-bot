@@ -120,7 +120,7 @@ sub full_progress ($opts) {
     if ($opts->{"csv-file"}) {
         $body = Mojo::File->new($opts->{"csv-file"})->slurp;
     } else {
-        my $url = $opts->{"csv-url"} // "https://raw.githubusercontent.com/owid/covid-19-data/master/scripts/scripts/vaccinations/output/Taiwan.csv";
+        my $url = $opts->{"csv-url"} // "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
         my $res = Mojo::UserAgent->new->get($url)->result;
         $res->is_success or die "Failed to fetch: $url";
         $body = $res->body;
