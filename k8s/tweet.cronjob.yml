@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: tweet-taiwan-covid19-vaccination-progress
 spec:
-  schedule: "0 11 * * *"
+  schedule: "30 11 * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2
