@@ -14,8 +14,10 @@ use Mojo::Date;
 use Mojo::File;
 
 use constant {
-    # Number https://zh.wikipedia.org/wiki/%E8%87%BA%E7%81%A3%E4%BA%BA%E5%8F%A3
-    POPULATION_OF_TAIWAN => 23487509,
+    # Number from:
+    # - https://www.ris.gov.tw/app/portal/2121?sn=21253240
+    # - https://zh.wikipedia.org/wiki/%E8%87%BA%E7%81%A3%E4%BA%BA%E5%8F%A3
+    POPULATION_OF_TAIWAN => 23451837,
 };
 
 sub commify($num) {
