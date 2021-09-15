@@ -30,6 +30,10 @@ sub commify($num) {
     return $num_commified;
 }
 
+sub rounded($num) {
+    sprintf('%.2f', $num)
+}
+
 sub main {
     my @args = @_;
 
@@ -80,7 +84,11 @@ sub build_message ($opts) {
         return "";
     }
 
-    my $msg = "累計至 $date，全民共接種了 " . commify($total_vaccinations) . " 劑\n\n";
+    my $msg = "累計至 $date，全民共接種了 " .
+        commify($total_vaccinations) .
+        " 劑，劑次人口比 " .
+        rounded($total_vaccinations / POPULATION_OF_TAIWAN * 100) .
+        "  (劑/每百人)。\n\n";
 
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
         my ($dose1_increase, $dose2_increase);
@@ -113,7 +121,7 @@ sub build_progress_bar($n, $base) {
     my $p = int $width * $percentage / 100;
     my $q = $width - $p;
     my $bar = "[" . ("#" x $p) . ("_" x $q) . "]";
-    $percentage = int(1000 * $percentage) / 1000;
+    $percentage = int(100 * $percentage) / 100;
     return { "bar" => $bar, "percentage" => $percentage };
 }
 
