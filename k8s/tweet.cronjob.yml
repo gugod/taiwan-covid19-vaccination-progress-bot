@@ -21,7 +21,7 @@ spec:
               command:
                 - perl
                 - /app/bin/tweet.pl
-                - '-c'
+                - '--twitter-config'
                 - /app/secrets/twitter-token.yml
                 - '--mastodon-config'
                 - /app/secrets/mastodon-token.yml

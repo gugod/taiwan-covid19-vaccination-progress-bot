@@ -41,7 +41,7 @@ sub main {
     GetOptionsFromArray(
         \@args,
         \%opts,
-        'c=s',
+        'twitter-config=s',
         'mastodon-config=s',
         'y|yes',
         'fake-today=s',
@@ -158,9 +158,9 @@ sub maybe_post_update ($opts, $msg) {
 sub maybe_tweet_update ($opts, $msg) {
     my $config;
 
-    if ($opts->{c} && -f $opts->{c}) {
-        say "[INFO] Loading config from $opts->{c}";
-        $config = YAML::LoadFile( $opts->{c} );
+    if ($opts->{"twitter-config"} && -f $opts->{"twitter-config"}) {
+        say "[INFO] Loading config from " . $opts->{"twitter-config"};
+        $config = YAML::LoadFile( $opts->{"twitter-config"} );
     } else {
         say "[INFO] No Twitter config.";
     }
