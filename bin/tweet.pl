@@ -78,6 +78,7 @@ sub build_message ($opts) {
     my $total_vaccinations = $latest->{"total_vaccinations"};
     my $dose1_cumulative_sum = $latest->{"people_vaccinated"};
     my $dose2_cumulative_sum = $latest->{"people_fully_vaccinated"};
+    my $booster_cumulative_sum = $latest->{"total_boosters"};
 
     my $today = $opts->{"fake-today"} || today();
     if (date_diff($today, $date) != 1) {
@@ -96,31 +97,45 @@ sub build_message ($opts) {
             $dose1_increase = $dose1_cumulative_sum - $previous->{"people_vaccinated"};
             $dose2_increase = $dose2_cumulative_sum - $previous->{"people_fully_vaccinated"};
         }
-        $msg .= dose_bar("💉第一劑", $dose1_cumulative_sum, $dose1_increase);
-        $msg .= dose_bar("💉第二劑", $dose2_cumulative_sum, $dose2_increase);
+        $msg .= dose_stats_and_bar("💉第一劑", $dose1_cumulative_sum, $dose1_increase);
+        $msg .= dose_stats_and_bar("💉第二劑", $dose2_cumulative_sum, $dose2_increase);
     } else {
-        $msg .= dose_bar("💉第一劑 + 第二劑", $total_vaccinations, undef);
+        $msg .= dose_stats_and_bar("💉第一劑 + 第二劑", $total_vaccinations, undef);
+    }
+
+    if ($booster_cumulative_sum) {
+        my $booster_increase;
+        if (date_diff($date, $previous->{"date"}) == 1) {
+            $booster_increase = $booster_cumulative_sum - $previous->{"total_boosters"};
+        }
+        $msg .= dose_stats("💉追加劑", $booster_cumulative_sum, $booster_increase) . "\n\n";
     }
 
     $msg .= "#CovidVaccine #COVID19 #COVID19Taiwan";
     return $msg;
 }
 
-sub dose_bar($label, $cumulative_sum, $increase) {
-    my $o = build_progress_bar($cumulative_sum, POPULATION_OF_TAIWAN);
+sub dose_stats_and_bar($label, $cumulative_sum, $increase) {
+    return dose_stats($label, $cumulative_sum, $increase) ."\n".
+        dose_bar($cumulative_sum) . "\n\n";
+}
+
+sub dose_stats($label, $cumulative_sum, $increase) {
     my $with_increase = " (+" . commify($increase) . ")" if $increase;
-    return (
-        $label . " ". commify($cumulative_sum) . $with_increase . "\n" .
-        $o->{"bar"} . " " . $o->{"percentage"} . "\%\n\n"
-    );
+    return $label . " ". commify($cumulative_sum) . $with_increase;
+}
+
+sub dose_bar($cumulative_sum) {
+    my $o = build_progress_bar($cumulative_sum, POPULATION_OF_TAIWAN);
+    return $o->{"bar"} . " " . $o->{"percentage"} . "\%";
 }
 
 sub build_progress_bar($n, $base) {
     my $percentage = 100 * $n / $base;
-    my $width = 26;
+    my $width = 12;
     my $p = int $width * $percentage / 100;
     my $q = $width - $p;
-    my $bar = "[" . ("#" x $p) . ("_" x $q) . "]";
+    my $bar = ("█" x $p) . ("▁" x $q);
     $percentage = int(100 * $percentage) / 100;
     return { "bar" => $bar, "percentage" => $percentage };
 }
