@@ -108,7 +108,7 @@ sub build_message ($opts) {
         if (date_diff($date, $previous->{"date"}) == 1) {
             $booster_increase = $booster_cumulative_sum - $previous->{"total_boosters"};
         }
-        $msg .= dose_stats("💉追加劑", $booster_cumulative_sum, $booster_increase) . "\n\n";
+        $msg .= dose_stats("💉基礎加強劑 + 追加劑", $booster_cumulative_sum, $booster_increase) . "\n\n";
     }
 
     $msg .= "#CovidVaccine #COVID19 #COVID19Taiwan";
