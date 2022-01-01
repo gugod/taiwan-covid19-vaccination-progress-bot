@@ -132,7 +132,7 @@ sub dose_bar($cumulative_sum) {
 
 sub build_progress_bar($n, $base) {
     my $percentage = 100 * $n / $base;
-    my $width = 12;
+    my $width = 10;
     my $p = int $width * $percentage / 100;
     my $q = $width - $p;
     my $bar = ("█" x $p) . ("▁" x $q);
