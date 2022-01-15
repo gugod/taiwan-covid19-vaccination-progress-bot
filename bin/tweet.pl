@@ -14,10 +14,10 @@ use Mojo::Date;
 use Mojo::File;
 
 use constant {
-    # As of the end of November, 2021.
+    # As of the end of December, 2021.
     # Number from:
-    # - https://www.ris.gov.tw/app/portal/2121?sn=21344306
-    POPULATION_OF_TAIWAN => 23394787,
+    # - https://www.ris.gov.tw/app/portal/2121?sn=22010344
+    POPULATION_OF_TAIWAN => 23375314,
 };
 
 sub commify($num) {
@@ -89,7 +89,7 @@ sub build_message ($opts) {
         commify($total_vaccinations) .
         " 劑，劑次人口比 " .
         rounded($total_vaccinations / POPULATION_OF_TAIWAN * 100) .
-        "  (劑/每百人)。\n\n";
+        "  (劑/每百人)\n\n";
 
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
         my ($dose1_increase, $dose2_increase);
@@ -108,7 +108,7 @@ sub build_message ($opts) {
         if (date_diff($date, $previous->{"date"}) == 1) {
             $booster_increase = $booster_cumulative_sum - $previous->{"total_boosters"};
         }
-        $msg .= dose_stats("💉基礎加強劑 + 追加劑", $booster_cumulative_sum, $booster_increase) . "\n\n";
+        $msg .= dose_stats_and_bar("💉基礎加強劑 + 追加劑", $booster_cumulative_sum, $booster_increase);
     }
 
     $msg .= "#CovidVaccine #COVID19 #COVID19Taiwan";
