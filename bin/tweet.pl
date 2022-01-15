@@ -14,10 +14,10 @@ use Mojo::Date;
 use Mojo::File;
 
 use constant {
-    # As of the end of November, 2021.
+    # As of the end of December, 2021.
     # Number from:
-    # - https://www.ris.gov.tw/app/portal/2121?sn=21344306
-    POPULATION_OF_TAIWAN => 23394787,
+    # - https://www.ris.gov.tw/app/portal/2121?sn=22010344
+    POPULATION_OF_TAIWAN => 23375314,
 };
 
 sub commify($num) {
