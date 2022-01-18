@@ -85,11 +85,7 @@ sub build_message ($opts) {
         return "";
     }
 
-    my $msg = "累計至 $date，全民共接種了 " .
-        commify($total_vaccinations) .
-        " 劑，劑次人口比 " .
-        rounded($total_vaccinations / POPULATION_OF_TAIWAN * 100) .
-        "  (劑/每百人)\n\n";
+    my $msg = "累計至 $date\n\n";
 
     if ($dose1_cumulative_sum && $dose2_cumulative_sum) {
         my ($dose1_increase, $dose2_increase);
