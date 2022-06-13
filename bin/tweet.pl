@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
-use v5.26;
+use v5.36;
 use utf8;
-use feature 'signatures';
 
 use Twitter::API;
 use Mastodon::Client;
@@ -119,7 +118,7 @@ sub dose_stats_and_bar($label, $cumulative_sum, $increase) {
 }
 
 sub dose_stats($label, $cumulative_sum, $increase) {
-    my $with_increase = " (+" . commify($increase) . ")" if $increase;
+    my $with_increase = defined($increase) ? " (+" . commify($increase) . ")" : "";
     return $label . " ". commify($cumulative_sum) . $with_increase;
 }
 
