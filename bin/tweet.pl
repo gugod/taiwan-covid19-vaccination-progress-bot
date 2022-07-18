@@ -21,19 +21,7 @@ use constant {
     POPULATION_OF_TAIWAN => 23186278,
 };
 
-sub commify($num) {
-    my $i = (length($num) % 3) || 3;
-    my $num_commified = substr($num, 0, $i);
-    while ($i < length($num)) {
-        $num_commified .= "," . substr($num, $i, 3);
-        $i += 3;
-    }
-    return $num_commified;
-}
-
-sub rounded($num) {
-    sprintf('%.2f', $num)
-}
+exit(main(@ARGV));
 
 sub main {
     my @args = @_;
@@ -56,7 +44,19 @@ sub main {
     return 0;
 }
 
-exit(main(@ARGV));
+sub commify($num) {
+    my $i = (length($num) % 3) || 3;
+    my $num_commified = substr($num, 0, $i);
+    while ($i < length($num)) {
+        $num_commified .= "," . substr($num, $i, 3);
+        $i += 3;
+    }
+    return $num_commified;
+}
+
+sub rounded($num) {
+    sprintf('%.2f', $num)
+}
 
 sub today {
     my ($year, $mon, $day) = (localtime())[5,4,3];
