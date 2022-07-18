@@ -15,10 +15,10 @@ use Mojo::File;
 use constant {
     # Find the updates of this stat from: https://www.ris.gov.tw/app/portal/2121
     #
-    # As of the end of May, 2022.
+    # As of the end of June, 2022.
     # Number from:
-    # - https://www.ris.gov.tw/app/portal/2121?sn=22161403
-    POPULATION_OF_TAIWAN => 23196178,
+    # - https://www.ris.gov.tw/app/portal/2121?sn=22189410
+    POPULATION_OF_TAIWAN => 23186278,
 };
 
 sub commify($num) {
