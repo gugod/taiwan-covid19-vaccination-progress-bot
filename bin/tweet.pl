@@ -13,6 +13,8 @@ use Mojo::Date;
 use Mojo::File;
 
 use constant {
+    URL_TAIWAN_CSV => "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv",
+
     # Find the updates of this stat from: https://www.ris.gov.tw/app/portal/2121
     #
     # As of the end of June, 2022.
@@ -137,19 +139,28 @@ sub build_progress_bar($n, $base) {
     return { "bar" => $bar, "percentage" => $percentage };
 }
 
-sub full_progress ($opts) {
-    my $body;
-    if ($opts->{"csv-file"}) {
-        $body = Mojo::File->new($opts->{"csv-file"})->slurp;
-    } else {
-        my $url = $opts->{"csv-url"} // "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/country_data/Taiwan.csv";
-        my $res = Mojo::UserAgent->new->get($url)->result;
-        $res->is_success or die "Failed to fetch: $url";
-        $body = $res->body;
-    }
+sub read_taiwan_csv_file($filename) {
+    return Mojo::File->new($filename)->slurp;
+}
 
-    die "No CSV" unless $body;
-    return csv( "in" => \$body, "headers" => "auto");
+sub read_taiwan_csv_url($url) {
+    $url //= URL_TAIWAN_CSV;
+    my $res = Mojo::UserAgent->new->get($url)->result;
+    $res->is_success or die "Failed to fetch: $url";
+    return $res->body;
+}
+
+sub read_taiwan_csv ($opts) {
+    if ($opts->{"csv-file"}) {
+        return read_taiwan_csv_file($opts->{"csv-file"});
+    } else {
+        return read_taiwan_csv_url($opts->{"csv-url"});
+    }
+}
+
+sub full_progress ($opts) {
+    my $csv_content = read_taiwan_csv($opts) or die "No CSV content";
+    return csv( "in" => \$csv_content, "headers" => "auto");
 }
 
 sub maybe_post_update ($opts, $msg) {
